@@ -2,7 +2,7 @@
   <h3 align="center">Django-Dry-Rest-Permissions</h3>
   <p align="center">Rules based permissions for the Django Rest Framework.</p>
   <p align="center">
-    <a href="https://travis-ci.org/FJNR-inc/dry-rest-permissions">
+    <a href="https://www.travis-ci.com/github/FJNR-inc/dry-rest-permissions/">
       <img alt="Travis (.com)" src="https://img.shields.io/travis/com/FJNR-inc/dry-rest-permissions?style=flat-square">
     </a>
     <a href="https://pypi.org/project/django-dry-rest-permissions/">
