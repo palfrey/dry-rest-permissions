@@ -1,5 +1,10 @@
 # History
 
+## 1.2.0
+
+* Added type hints
+* Added support for python 3.9
+
 ## 1.1.0
 
 * Add DRYGlobalPermissionsField
