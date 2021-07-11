@@ -39,22 +39,6 @@ def get_packages(package):
             if os.path.exists(os.path.join(dirpath, '__init__.py'))]
 
 
-def get_package_data(package):
-    """
-    Return all files under the root package, that are not in a
-    package themselves.
-    """
-    walk = [(dirpath.replace(package + os.sep, '', 1), filenames)
-            for dirpath, dirnames, filenames in os.walk(package)
-            if not os.path.exists(os.path.join(dirpath, '__init__.py'))]
-
-    filepaths = []
-    for base, filenames in walk:
-        filepaths.extend([os.path.join(base, filename)
-                          for filename in filenames])
-    return {package: filepaths}
-
-
 version = get_version(package)
 
 
@@ -81,7 +65,7 @@ setup(
     author=author,
     author_email=author_email,
     packages=get_packages(package),
-    package_data=get_package_data(package),
+    package_data={"dry_rest_permissions": ["py.typed"]},
     install_requires=[],
     classifiers=[
         'Development Status :: 5 - Production/Stable',

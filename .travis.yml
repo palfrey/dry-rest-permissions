@@ -8,6 +8,8 @@ jobs:
     env: TOXENV=py37-flake8
   - python: 3.7
     env: TOXENV=py37-docs
+  - python: 3.7
+    env: TOXENV=py37-mypy
   - python: 3.5
     env: TOXENV=py35-django2-drf3.8
   - python: 3.5

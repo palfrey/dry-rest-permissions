@@ -7,12 +7,26 @@ permission checks to be returned by the api per object so that
 they can be consumed by a front end application.
 """
 from functools import wraps
+from typing import Type, cast
+from django.db.models.query import QuerySet
 
 from rest_framework import filters
 from rest_framework import permissions
 from rest_framework import fields
+from rest_framework import request
+from rest_framework import views
+from rest_framework import generics
+
 
 from django.contrib.contenttypes.models import ContentType
+from rest_framework.serializers import ModelSerializer
+
+# gets redefined as true when type checking
+MYPY = False
+
+if MYPY:
+    from django.db import models as django_models  # noqa: F401
+    from typing import List  # noqa: F401
 
 
 class DRYPermissionFiltersBase(filters.BaseFilterBackend):
@@ -34,7 +48,7 @@ class DRYPermissionFiltersBase(filters.BaseFilterBackend):
     """
     action_routing = False
 
-    def filter_queryset(self, request, queryset, view):
+    def filter_queryset(self, request: request.Request, queryset: QuerySet, view: views.APIView):
         """
         This method overrides the standard filter_queryset method.
         This method will check to see if the view calling this is from
@@ -42,15 +56,15 @@ class DRYPermissionFiltersBase(filters.BaseFilterBackend):
         by action type if action_routing is set to True.
         """
         # Check if this is a list type request
-        if view.lookup_field not in view.kwargs:
+        if isinstance(view, generics.GenericAPIView) and view.lookup_field not in view.kwargs:
             if not self.action_routing:
                 return self.filter_list_queryset(request, queryset, view)
             else:
-                method_name = "filter_{action}_queryset".format(action=view.action)
+                method_name = "filter_{action}_queryset".format(action=view.action)  # type: ignore[attr-defined]
                 return getattr(self, method_name)(request, queryset, view)
         return queryset
 
-    def filter_list_queryset(self, request, queryset, view):
+    def filter_list_queryset(self, request: request.Request, queryset: QuerySet, view: views.APIView) -> QuerySet:
         """
         Override this function to add filters.
         This should return a queryset so start with queryset.filter({your filters})
@@ -96,14 +110,16 @@ class DRYPermissions(permissions.BasePermission):
     object_permissions = True
     partial_update_is_update = True
 
-    def has_permission(self, request, view):
+    def has_permission(self, request: request.Request, view: views.APIView):
         """
         Overrides the standard function and figures out methods to call for global permissions.
         """
         if not self.global_permissions:
             return True
 
-        serializer_class = view.get_serializer_class()
+        assert isinstance(view, generics.GenericAPIView), "View needs to descend from GenericAPIView"
+
+        serializer_class = cast(Type[ModelSerializer], view.get_serializer_class())
 
         assert serializer_class.Meta.model is not None, (
             "global_permissions set to true without a model "
@@ -114,7 +130,7 @@ class DRYPermissions(permissions.BasePermission):
 
         action_method_name = None
         if hasattr(view, 'action'):
-            action = self._get_action(view.action)
+            action = self._get_action(view.action)  # type: ignore[attr-defined]
             action_method_name = "has_{action}_permission".format(action=action)
             # If the specific action permission exists then use it, otherwise use general.
             if hasattr(model_class, action_method_name):
@@ -123,11 +139,11 @@ class DRYPermissions(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             assert hasattr(model_class, 'has_read_permission'), \
                 self._get_error_message(model_class, 'has_read_permission', action_method_name)
-            return model_class.has_read_permission(request)
+            return model_class.has_read_permission(request)  # type: ignore[attr-defined]
         else:
             assert hasattr(model_class, 'has_write_permission'), \
                 self._get_error_message(model_class, 'has_write_permission', action_method_name)
-            return model_class.has_write_permission(request)
+            return model_class.has_write_permission(request)  # type: ignore[attr-defined]
 
     def has_object_permission(self, request, view, obj):
         """
@@ -299,7 +315,7 @@ class DRYGlobalPermissionsField(fields.Field):
         'write',
         'read'
     ]
-    models = []
+    models = []  # type: List[django_models.Model]
 
     def __init__(self, actions=None, additional_actions=None, **kwargs):
         """See class description for parameters and usage"""

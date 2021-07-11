@@ -14,3 +14,9 @@ wheel==0.24.0
 
 # MkDocs for documentation previews/deploys
 mkdocs==1.2.1
+
+# mypy
+mypy==0.910
+django-stubs==1.8.0
+djangorestframework-stubs==1.4.0
+types-pyyaml==5.4.3
