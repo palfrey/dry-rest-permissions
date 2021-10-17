@@ -20,11 +20,11 @@ from rest_framework.serializers import ModelSerializer
 MYPY = False
 
 if MYPY:
-    from django.db.models.query import QuerySet
-    from django.db import models as django_models
-    from typing import List
-    from rest_framework.request import Request
-    from rest_framework import views
+    from django.db.models.query import QuerySet  # noqa: F401
+    from django.db import models as django_models  # noqa: F401
+    from typing import List  # noqa: F401
+    from rest_framework.request import Request  # noqa: F401
+    from rest_framework import views  # noqa: F401
 
 
 class DRYPermissionFiltersBase(filters.BaseFilterBackend):
@@ -112,7 +112,7 @@ class DRYPermissions(permissions.BasePermission):
     partial_update_is_update = True
 
     def has_permission(self, request, view):
-        # type: (request.Request, views.APIView) -> bool
+        # type: (Request, views.APIView) -> bool
         """
         Overrides the standard function and figures out methods to call for global permissions.
         """
