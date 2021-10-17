@@ -49,7 +49,7 @@ def pytest_configure():
             "DEFAULT_FILTER_BACKENDS": [
                 "dry_rest_permissions.generics.DRYPermissionFiltersBase",
             ],
-        }         
+        }
     )
 
     try:
