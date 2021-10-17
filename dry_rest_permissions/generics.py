@@ -13,9 +13,6 @@ from django.db.models.query import QuerySet
 from rest_framework import filters
 from rest_framework import permissions
 from rest_framework import fields
-from rest_framework import request
-from rest_framework import views
-from rest_framework import generics
 
 
 from django.contrib.contenttypes.models import ContentType
@@ -25,8 +22,11 @@ from rest_framework.serializers import ModelSerializer
 MYPY = False
 
 if MYPY:
-    from django.db import models as django_models  # noqa: F401
-    from typing import List  # noqa: F401
+    from django.db import models as django_models
+    from typing import List
+    from rest_framework import request
+    from rest_framework import views
+
 
 
 class DRYPermissionFiltersBase(filters.BaseFilterBackend):
@@ -48,7 +48,8 @@ class DRYPermissionFiltersBase(filters.BaseFilterBackend):
     """
     action_routing = False
 
-    def filter_queryset(self, request: request.Request, queryset: QuerySet, view: views.APIView):
+    def filter_queryset(self, request, queryset, view):
+        # type: (request.Request, QuerySet, views.APIView) -> QuerySet
         """
         This method overrides the standard filter_queryset method.
         This method will check to see if the view calling this is from
@@ -56,6 +57,7 @@ class DRYPermissionFiltersBase(filters.BaseFilterBackend):
         by action type if action_routing is set to True.
         """
         # Check if this is a list type request
+        from rest_framework import generics # avoiding circular import issues
         if isinstance(view, generics.GenericAPIView) and view.lookup_field not in view.kwargs:
             if not self.action_routing:
                 return self.filter_list_queryset(request, queryset, view)
@@ -64,7 +66,8 @@ class DRYPermissionFiltersBase(filters.BaseFilterBackend):
                 return getattr(self, method_name)(request, queryset, view)
         return queryset
 
-    def filter_list_queryset(self, request: request.Request, queryset: QuerySet, view: views.APIView) -> QuerySet:
+    def filter_list_queryset(self, request, queryset, view):
+        # type: (request.Request, QuerySet, views.APIView) -> QuerySet
         """
         Override this function to add filters.
         This should return a queryset so start with queryset.filter({your filters})
@@ -110,13 +113,15 @@ class DRYPermissions(permissions.BasePermission):
     object_permissions = True
     partial_update_is_update = True
 
-    def has_permission(self, request: request.Request, view: views.APIView):
+    def has_permission(self, request, view):
+        # type: (request.Request, views.APIView) -> bool
         """
         Overrides the standard function and figures out methods to call for global permissions.
         """
         if not self.global_permissions:
             return True
 
+        from rest_framework import generics # avoiding circular import issues
         assert isinstance(view, generics.GenericAPIView), "View needs to descend from GenericAPIView"
 
         serializer_class = cast(Type[ModelSerializer], view.get_serializer_class())

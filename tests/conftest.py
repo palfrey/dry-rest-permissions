@@ -42,6 +42,14 @@ def pytest_configure():
             'django.contrib.auth.hashers.MD5PasswordHasher',
             'django.contrib.auth.hashers.CryptPasswordHasher',
         ),
+        REST_FRAMEWORK={
+            "DEFAULT_PERMISSION_CLASSES": [
+                "dry_rest_permissions.generics.DRYPermissions",
+            ],
+            "DEFAULT_FILTER_BACKENDS": [
+                "dry_rest_permissions.generics.DRYPermissionFiltersBase",
+            ],
+        }         
     )
 
     try:
